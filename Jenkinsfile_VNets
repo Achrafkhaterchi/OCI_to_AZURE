@@ -1,0 +1,65 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Exportiong from OCI') {
+            steps {
+                git branch: 'main', url:'https://github.com/Achrafkhaterchi/OCI_to_AZURE.git'
+
+                sh 'python3 Backend/Network_Export.py Backend/OCI.xlsx Backend/network-tfstate_terraform.tfstate'
+
+                archiveArtifacts 'Backend/OCI.xlsx'
+            }
+        }
+
+        stage('TFVARS') {
+            steps {
+                stash(name: 'ociArtifact', includes: 'Backend/OCI.xlsx')
+                script {
+                    unstash 'ociArtifact'
+
+                    sh 'python3 Backend/VNets_Create.py Network/VNets/Template/VNets.j2 New_Subnet.py Backend/OCI.xlsx'
+                }
+                archiveArtifacts 'Network/VNets/variables.tfvars'
+            }
+        }
+
+        stage('Terraform Init') {
+            steps {
+                dir('Network/VNets/') {
+                    sh 'terraform init'
+                }
+            }
+        }
+
+        stage('Terraform Plan') {
+            steps {
+                dir('Network/VNets/'){
+                    sh 'terraform plan -var-file=variables.tfvars -out tfplan'
+                }
+            }
+        }
+
+        stage('Terraform Apply') {
+            steps {
+                dir('Network/VNets/'){
+                sh 'terraform apply -auto-approve tfplan'
+                }
+            }
+        }
+
+        /*stage('Terraform Destroy') {
+            steps {
+                dir('Network\VNets\'){
+                sh 'terraform destroy -auto-approve -var-file=variables.tfvars'
+                }
+            }
+        }*/
+    }
+
+    post {
+        success {
+            echo 'IAM has successfully transfered from OCI to Azure !'
+        }
+    }
+}
