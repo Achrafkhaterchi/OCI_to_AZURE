@@ -11,7 +11,7 @@ vnets = {
 
 GatewaySubnet = {
   vnet_name = "{{ GatewaySubnet.vnet_name }}"
-  address_prefixes = {{ GatewaySubnet.address_prefixes | tojson }}
+  address_prefixes = [{{ GatewaySubnet.address_prefixes | tojson }}]
 }
 
 
