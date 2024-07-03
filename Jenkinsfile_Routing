@@ -18,7 +18,7 @@ pipeline {
                 script {
                     unstash 'ociArtifact'
 
-                    sh 'python3 Backend/Routing_Create.py Network/Routing/Template/Routing.j2 Backend/OCI.xlsx'
+                    sh 'python3 Backend/Routing_Create.py Network/Routing/Template/Routing.j2 Backend/OCI.xlsx Network/Routing/terraform.tfstate'
                 }
                 archiveArtifacts 'Network/Routing/variables.tfvars'
             }
