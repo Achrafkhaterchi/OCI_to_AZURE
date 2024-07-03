@@ -204,38 +204,23 @@ for resource in tfstate_data.get("resources", []):
 
                 grouped_route_data_list.append(route_rule_data)
 
-df3 = pd.DataFrame(grouped_route_data_list)
+df_route_tables = pd.DataFrame(grouped_route_data_list)
 
 sheet_name = "Route_Table"
+wb = load_workbook(excel_file_path)
 ws = wb[sheet_name]
 
-current_vcn = None
-start_row = 1
-
-for index, row in df3.iterrows():
+# Écrire les données dans la feuille Excel
+for index, row in df_route_tables.iterrows():
     vcn_name = row["VCN_Name"]
     route_table_name = row["Route_Table_Name"]
     route_rule_descriptions = row["Route_Rule_Description"]
     route_rule_destinations = row["Route_Rule_Destination"]
     route_rule_destination_types = row["Route_Rule_Destination_Type"]
 
-    # Écrire le VCN uniquement si c'est un nouveau
-    if vcn_name != current_vcn:
-        if current_vcn is not None:
-            ws.merge_cells(start_row=start_row, start_column=1, end_row=ws.max_row, end_column=1)
-        start_row = ws.max_row + 1
-        current_vcn = vcn_name
-    else:
-        vcn_name = ''
-        
-
     for description, destination, destination_type in zip(route_rule_descriptions, route_rule_destinations, route_rule_destination_types):
+        # Ajouter le nom du VCN à chaque ligne
         ws.append([vcn_name, route_table_name, description, destination, destination_type])
-        vcn_name = ''  # Ne répétez pas le nom du VCN
-
-# Fusionner les dernières cellules du VCN
-if current_vcn is not None:
-    ws.merge_cells(start_row=start_row, start_column=1, end_row=ws.max_row, end_column=1)
 
 # Sauvegarder et fermer le fichier Excel
 wb.save(excel_file_path)

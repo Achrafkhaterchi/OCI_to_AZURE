@@ -51,18 +51,26 @@ hub_vcn_name, spoke_vcns = peering(wb)
 #--------------------------------------------------------------------------------------------------------------------------
 
 def extract_route_tables(excel_file_path, sheet_name="Route_Table"):
-    df = pd.read_excel(excel_file_path, sheet_name=sheet_name)
+    df_routes = pd.read_excel(excel_file_path, sheet_name=sheet_name)
+    df_vcns = pd.read_excel(excel_file_path, sheet_name="VCN")  # Assuming the sheet with VCN details is named "VCN"
+    
     route_table_dict = {}
-    filtered_df = df[df['Route_Rule_Destination_Type'] == 'CIDR_BLOCK']
-    for index, row in filtered_df.iterrows():
+    
+    for index, row in df_routes.iterrows():
         table_name = row['Route_Table_Name']
-        rule_desc = row['Route_Rule_Description']
+        vcn_name = row['VCN_Name']
         rule_dest = row['Route_Rule_Destination']
+        rule_dest_type = row['Route_Rule_Destination_Type']
+        
+        if rule_dest_type != "CIDR_BLOCK":
+            continue  # Skip this row if Route_Rule_Destination_Type is not CIDR_BLOCK
         
         if rule_dest == "0.0.0.0/0":
             next_hop_type = "Internet"
+            rule_desc = f"{vcn_name}_To_Internet"
         else:
             next_hop_type = "VirtualNetworkGateway"
+            rule_desc = f"{vcn_name}_To_{find_destination_vcn(rule_dest, df_vcns)}"
         
         if table_name not in route_table_dict:
             route_table_dict[table_name] = []
@@ -75,7 +83,15 @@ def extract_route_tables(excel_file_path, sheet_name="Route_Table"):
     
     return route_table_dict
 
+def find_destination_vcn(cidr_block, df_vcns):
+    try:
+        return df_vcns.loc[df_vcns['CIDR_Block'] == cidr_block, 'VCN_Name'].values[0]
+    except IndexError:
+        return "Unknown_VCN"
+
+
 route_tables = extract_route_tables(excel_file_path)
+print(route_tables)
 
 #--------------------------------------------------------------------------------------------------------------------------
 
