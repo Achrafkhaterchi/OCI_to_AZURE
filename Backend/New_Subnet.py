@@ -48,7 +48,6 @@ def subnetting(base_network_str, num_subnets):
         mask_length += 1
         subnets = list(base_network.subnets(new_prefix=mask_length))
 
-    # Extraire les préfixes des sous-réseaux sous forme de chaînes
     subnet_prefixes = [str(subnet) for subnet in subnets]
 
     return subnet_prefixes[:num_subnets]
