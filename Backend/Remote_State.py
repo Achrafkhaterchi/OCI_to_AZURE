@@ -14,8 +14,8 @@ def generate_random_name(prefix, length=8):
     return prefix + ''.join(random.choices(string.ascii_lowercase + string.digits, k=length))
 
 def extract_resource_group(wb):
-    vcn_sheet = wb["VCN"]
-    resource_group = vcn_sheet.cell(row=2, column=1).value
+    RG_sheet = wb["RG"]
+    resource_group = RG_sheet.cell(row=2, column=1).value
     return resource_group
 
 resource_group = extract_resource_group(wb)
