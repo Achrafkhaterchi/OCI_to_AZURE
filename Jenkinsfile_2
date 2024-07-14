@@ -2,64 +2,52 @@ pipeline {
     agent any
 
     stages {
-        stage('Exportiong from OCI') {
+        stage('Run Storage Pipeline') {
             steps {
-                git branch: 'main', url:'https://github.com/Achrafkhaterchi/OCI_to_AZURE.git'
-
-                sh 'python3 Backend/Network_Export.py Backend/OCI.xlsx Backend/network-tfstate_terraform.tfstate'
-
-                archiveArtifacts 'Backend/OCI.xlsx'
-            }
-        }
-
-        stage('TFVARS') {
-            steps {
-                stash(name: 'ociArtifact', includes: 'Backend/OCI.xlsx')
                 script {
-                    unstash 'ociArtifact'
+                    def storageResult = build job: 'OCI_to_Azure', wait: true
+                    println "Storage Pipeline result: ${storageResult.result}"
 
-                    sh 'python3 Backend/VNets_Create.py Network/VNets/Template/VNets.j2 New_Subnet.py Backend/OCI.xlsx'
-                }
-                archiveArtifacts 'Network/VNets/variables.tfvars'
-            }
-        }
-
-        stage('Terraform Init') {
-            steps {
-                dir('Network/VNets/') {
-                    sh 'terraform init'
+                    if (storageResult.result != 'SUCCESS') {
+                        error('Storage Pipeline failed')
+                    }
                 }
             }
         }
 
-        stage('Terraform Plan') {
+        stage('Run VNets Pipeline') {
             steps {
-                dir('Network/VNets/'){
-                    sh 'terraform plan -var-file=variables.tfvars -out tfplan'
+                script {
+                    def vnetsResult = build job: 'VNets_Pipeline', wait: true
+                    println "VNets Pipeline result: ${vnetsResult.result}"
+
+                    if (vnetsResult.result != 'SUCCESS') {
+                        error('VNets Pipeline failed')
+                    }
                 }
             }
         }
 
-        stage('Terraform Apply') {
+        stage('Run Routing Pipeline') {
             steps {
-                dir('Network/VNets/'){
-                sh 'terraform apply -auto-approve tfplan'
+                script {
+                    def routingResult = build job: 'Routing_Pipeline', wait: true
+                    println "Routing Pipeline result: ${routingResult.result}"
+
+                    if (routingResult.result != 'SUCCESS') {
+                        error('Routing Pipeline failed')
+                    }
                 }
             }
         }
-
-        /*stage('Terraform Destroy') {
-            steps {
-                dir('Network\VNets\'){
-                sh 'terraform destroy -auto-approve -var-file=variables.tfvars'
-                }
-            }
-        }*/
     }
 
     post {
         success {
-            echo 'VNets module has successfully transfered from OCI to Azure !'
+            echo 'Storage, VNets, and Routing modules have been successfully transferred from OCI to Azure!'
+        }
+        failure {
+            echo 'One of the pipelines failed. Check the logs for more details.'
         }
     }
 }

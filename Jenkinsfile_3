@@ -2,9 +2,9 @@ pipeline {
     agent any
 
     stages {
-        stage('Exportiong from OCI') {
+        stage('Exporting from OCI') {
             steps {
-                git branch: 'main', url:'https://github.com/Achrafkhaterchi/OCI_to_AZURE.git'
+                git branch: 'main', url: 'https://github.com/Achrafkhaterchi/OCI_to_AZURE.git'
 
                 sh 'python3 Backend/Network_Export.py Backend/OCI.xlsx Backend/network-tfstate_terraform.tfstate'
 
@@ -34,7 +34,7 @@ pipeline {
 
         stage('Terraform Plan') {
             steps {
-                dir('Network/VNets/'){
+                dir('Network/VNets/') {
                     sh 'terraform plan -var-file=variables.tfvars -out tfplan'
                 }
             }
@@ -42,16 +42,16 @@ pipeline {
 
         stage('Terraform Apply') {
             steps {
-                dir('Network/VNets/'){
-                sh 'terraform apply -auto-approve tfplan'
+                dir('Network/VNets/') {
+                    sh 'terraform apply -auto-approve tfplan'
                 }
             }
         }
 
         /*stage('Terraform Destroy') {
             steps {
-                dir('Network\VNets\'){
-                sh 'terraform destroy -auto-approve -var-file=variables.tfvars'
+                dir('Network/VNets/') {
+                    sh 'terraform destroy -auto-approve -var-file=variables.tfvars'
                 }
             }
         }*/
@@ -59,7 +59,7 @@ pipeline {
 
     post {
         success {
-            echo 'VNets module has successfully transfered from OCI to Azure !'
+            echo 'VNets module has successfully transferred from OCI to Azure!'
         }
     }
 }
