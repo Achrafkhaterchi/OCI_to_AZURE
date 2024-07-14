@@ -27,7 +27,7 @@ pipeline {
                 }
             }
         }
-
+/*
         stage('Run Routing Pipeline') {
             steps {
                 script {
@@ -39,7 +39,7 @@ pipeline {
                     }
                 }
             }
-        }
+        }*/
     }
 
     post {
