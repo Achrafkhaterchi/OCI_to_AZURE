@@ -7,21 +7,22 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/Achrafkhaterchi/OCI_to_AZURE.git'
 
                 sh 'python3 Backend/Remote_State.py'
+                stash name: 'main_tf_artifact', includes: 'Network/VNets/main.tf'
             }
         }
 
         stage('Archive TF files') {
             steps {
                 archiveArtifacts 'Network/Storage/main.tf'
-                archiveArtifacts 'Network/VNets/main.tf'
+                /*archiveArtifacts 'Network/VNets/main.tf'*/
             }
         }
 
-        stage('Stash main.tf') {
+        /*stage('Stash main.tf') {
             steps {
                 stash name: 'main_tf_artifact', includes: 'Network/VNets/main.tf'
             }
-        }
+        }*/
 
         stage('Terraform Init') {
             steps {
