@@ -18,15 +18,15 @@ pipeline {
                 script {
                     unstash 'ociArtifact'
 
-                    sh 'python3 Backend/Routing_Create.py Network/Routing/Template/Routing.j2 Backend/OCI.xlsx'
+                    sh 'python3 Backend/VNets_Create.py Network/VNets/Template/VNets.j2 New_Subnet.py Backend/OCI.xlsx'
                 }
-                archiveArtifacts 'Network/Routing/variables.tfvars'
+                archiveArtifacts 'Network/VNets/variables.tfvars'
             }
         }
 
         stage('Terraform Init') {
             steps {
-                dir('Network/Routing/') {
+                dir('Network/VNets/') {
                     sh 'terraform init'
                 }
             }
@@ -34,7 +34,7 @@ pipeline {
 
         stage('Terraform Plan') {
             steps {
-                dir('Network/Routing/'){
+                dir('Network/VNets/'){
                     sh 'terraform plan -var-file=variables.tfvars -out tfplan'
                 }
             }
@@ -42,7 +42,7 @@ pipeline {
 
         stage('Terraform Apply') {
             steps {
-                dir('Network/Routing/'){
+                dir('Network/VNets/'){
                 sh 'terraform apply -auto-approve tfplan'
                 }
             }
@@ -59,7 +59,7 @@ pipeline {
 
     post {
         success {
-            echo 'Routing module has successfully transfered from OCI to Azure !'
+            echo 'VNets module has successfully transfered from OCI to Azure !'
         }
     }
 }

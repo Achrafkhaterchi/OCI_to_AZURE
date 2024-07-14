@@ -91,7 +91,6 @@ def find_destination_vcn(cidr_block, df_vcns):
 
 
 route_tables = extract_route_tables(excel_file_path)
-print(route_tables)
 
 #--------------------------------------------------------------------------------------------------------------------------
 

@@ -68,6 +68,25 @@ nsg_dict = {
     if "attributes" in instance and "id" in instance["attributes"] and "display_name" in instance["attributes"]
 }
 
+#security_list_dict = {
+    #instance["attributes"]["id"]: instance["attributes"]["display_name"]
+    #for resource in tfstate_data["resources"]
+    #if "type" in resource and resource["type"] in ["oci_core_security_list", "oci_core_default_security_list"]
+    #and "mode" in resource and resource["mode"] == "managed"
+    #for instance in resource.get("instances", [])
+    #if "attributes" in instance and "id" in instance["attributes"] and "display_name" in instance["attributes"]
+#}
+#print(security_list_dict)
+
+security_list_dict = {
+    instance["attributes"]["id"]: instance["attributes"]["display_name"]
+    for resource in tfstate_data["resources"]
+    if "type" in resource and resource["type"] == "oci_core_security_list"
+    and "mode" in resource and resource["mode"] == "managed"
+    for instance in resource.get("instances", [])
+    if "attributes" in instance and "id" in instance["attributes"] and "display_name" in instance["attributes"]
+} 
+
 protocol_mapping = {
     '6': 'TCP',
     '17': 'UDP',
@@ -558,8 +577,105 @@ wb.close()
 # wb.save(excel_file_path)
 # wb.close()
 
+#---------------------------------------------------------------Security List Rules-----------------------------------------------------------------
+
+security_list_rules_data_list = []
+
+for resource in tfstate_data.get("resources", []):
+    if resource.get("type") == "oci_core_security_list" and resource.get("mode") == "managed":
+        for instance in resource.get("instances", []):
+            if "attributes" in instance:
+                attributes = instance["attributes"]
+                display_name = attributes.get("display_name")
+                
+                for rule in attributes.get("ingress_security_rules", []):
+                    protocol = rule.get("protocol")
+                    protocol_name = protocol_mapping.get(protocol, protocol)
+                    
+                    security_list_rules_data_list.append({
+                        "display_name": display_name,
+                        "direction": "ingress",
+                        "description": rule.get("description"),
+                        "protocol": protocol_name,
+                        "icmp_options": rule.get("icmp_options"),
+                        "source": rule.get("source"),
+                        "source_type": rule.get("source_type"),
+                        "destination": None,
+                        "destination_type": None,
+                        "tcp_options": rule.get("tcp_options"),
+                        "udp_options": rule.get("udp_options")
+                    })
+                
+                for rule in attributes.get("egress_security_rules", []):
+                    protocol = rule.get("protocol")
+                    protocol_name = protocol_mapping.get(protocol, protocol)
+                    
+                    security_list_rules_data_list.append({
+                        "display_name": display_name,
+                        "direction": "egress",
+                        "description": rule.get("description"),
+                        "protocol": protocol_name,
+                        "icmp_options": rule.get("icmp_options"),
+                        "source": None,
+                        "source_type": None,
+                        "destination": rule.get("destination"),
+                        "destination_type": rule.get("destination_type"),
+                        "tcp_options": rule.get("tcp_options"),
+                        "udp_options": rule.get("udp_options")
+                    })
+
+df_security_list_rules = pd.DataFrame(security_list_rules_data_list)
+
+sheet_name = "security_list_rules"
+ws = wb[sheet_name]
+rows = dataframe_to_rows(df_security_list_rules, index=False, header=True)
+
+for r_idx, row in enumerate(rows, 1):
+    for c_idx, value in enumerate(row, start=1):
+        if isinstance(value, list):
+            value = '\n'.join(map(str, value))
+        ws.cell(row=r_idx, column=c_idx, value=value)
+
+wb.save(excel_file_path)
+
+wb.close()
 
 
+#---------------------------------------------------------------Security List Associations------------------------------------------------------------
+
+subnet_security_list_association = []
+
+for resource in tfstate_data.get("resources", []):
+    if resource.get("type") == "oci_core_subnet" and resource.get("mode") == "managed":
+        for instance in resource.get("instances", []):
+            if "attributes" in instance:
+                attributes = instance["attributes"]
+                display_name = attributes.get("display_name")
+                security_list_ids = attributes.get("security_list_ids", [])
+                
+                for sec_list_id in security_list_ids:
+                    security_list_name = security_list_dict.get(sec_list_id)
+                    if security_list_name:
+                        subnet_security_list_association.append({
+                            "Subnet_Name": display_name,
+                            "Security_List_Name": security_list_name
+                        })
+
+df_subnet_security_list_association = pd.DataFrame(subnet_security_list_association)
+
+
+sheet_name = "Security_List_Associations"
+ws = wb[sheet_name]
+
+rows = dataframe_to_rows(df_subnet_security_list_association, index=False, header=True)
+
+for r_idx, row in enumerate(rows, 1):
+    for c_idx, value in enumerate(row, start=1):
+        ws.cell(row=r_idx, column=c_idx, value=value)
+
+wb.save(excel_file_path)
+
+wb.close()
 
 
 

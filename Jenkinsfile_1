@@ -1,0 +1,50 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Storage Configuration') {
+            steps {
+                git branch: 'main', url: 'https://github.com/Achrafkhaterchi/OCI_to_AZURE.git'
+
+                sh 'python3 Backend/Remote_State.py'
+            }
+        }
+
+        stage('Archive TF files') {
+            steps {
+                archiveArtifacts 'Storage/main.tf'
+                archiveArtifacts 'Network/VNets/main.tf'
+            }
+        }
+
+        stage('Terraform Init') {
+            steps {
+                dir('Storage') {
+                    sh 'terraform init'
+                }
+            }
+        }
+
+        stage('Terraform Plan') {
+            steps {
+                dir('Storage') {
+                    sh 'terraform plan -out=tfplan'
+                }
+            }
+        }
+
+        stage('Terraform Apply') {
+            steps {
+                dir('Storage') {
+                    sh 'terraform apply -auto-approve tfplan'
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Storage module has been successfully processed!'
+        }
+    }
+}

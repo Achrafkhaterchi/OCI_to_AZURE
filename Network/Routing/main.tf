@@ -5,10 +5,13 @@ provider "azurerm" {
 #----------------------------------------------------------------VNet Peering----------------------------------------------------------
 
 data "terraform_remote_state" "vnets" {
-  backend = "local"
+  backend = "azurerm"
 
   config = {
-    path = "../VNets/terraform.tfstate"
+    resource_group_name   = var.resource_group_name
+    storage_account_name  = "remotestatenb8slt0c"
+    container_name        = "terraform-state"
+    key                   = "VNets/terraform.tfstate"
   }
 }
 
