@@ -12,7 +12,7 @@ pipeline {
 
         stage('Archive TF files') {
             steps {
-                archiveArtifacts 'Network/Storage/main.tf'
+                archiveArtifacts 'Network/Storage'
                 archiveArtifacts 'Network/VNets/main.tf'
             }
         }
