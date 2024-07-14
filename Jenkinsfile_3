@@ -24,6 +24,12 @@ pipeline {
             }
         }
 
+        stage('Retrieve main.tf from Storage') {
+            steps {
+                unstash 'main_tf_artifact'
+            }
+        }
+
         stage('Terraform Init') {
             steps {
                 dir('Network/VNets/') {

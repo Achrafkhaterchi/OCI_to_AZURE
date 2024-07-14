@@ -14,6 +14,7 @@ pipeline {
             steps {
                 archiveArtifacts 'Network/Storage/main.tf'
                 archiveArtifacts 'Network/VNets/main.tf'
+                stash name: 'main_tf_artifact', includes: 'Network/VNets/main.tf'
             }
         }
 
