@@ -24,9 +24,22 @@ pipeline {
             }
         }
 
+        stage('Retrieve main.tf from Shared Location') {
+            steps {
+                sh 'cp /home/shared_files/main.tf Network/VNets/main.tf'
+                script {
+                    if (fileExists('Network/VNets/main.tf')) {
+                        echo 'Network/VNets/main.tf exists after copy.'
+                        sh 'cat Network/VNets/main.tf'
+                    } else {
+                        error('Network/VNets/main.tf does not exist after copy.')
+                    }
+                }
+            }
+        }
+/*
         stage('Retrieve and Unstash Network/VNets/main.tf from Storage') {
             steps {
-                stash(name: 'main_tf_artifact', includes: 'Network/VNets/main.tf')
                 unstash 'main_tf_artifact'
                 script {
                     if (fileExists('Network/VNets/main.tf')) {
@@ -39,7 +52,7 @@ pipeline {
                 }
             }
         }
-
+*/
         stage('Terraform Init') {
             steps {
                 dir('Network/VNets/') {

@@ -14,8 +14,14 @@ pipeline {
             steps {
                 archiveArtifacts 'Network/Storage/main.tf'
                 /*archiveArtifacts 'Network/VNets/main.tf'*/
-                stash name: 'main_tf_artifact', includes: 'Network/VNets/main.tf'
+                /*stash name: 'main_tf_artifact', includes: 'Network/VNets/main.tf'*/
 
+            }
+        }
+
+        stage('Copy main.tf to Shared Location') {
+            steps {
+                sh 'cp Network/VNets/main.tf /home/shared_files/main.tf'
             }
         }
 /*
