@@ -26,7 +26,7 @@ pipeline {
 
         stage('Retrieve and Unstash Network/VNets/main.tf from Storage') {
             steps {
-                /*unstash 'main_tf_artifact'*/
+                unstash 'main_tf_artifact'
                 script {
                     if (fileExists('Network/VNets/main.tf')) {
                         echo 'Network/VNets/main.tf exists after unstash.'
