@@ -57,8 +57,7 @@ pipeline {
         stage('Terraform Init') {
             steps {
                 dir('Network/VNets/') {
-                    sh 'terraform init'
-                }
+                    sh 'echo "yes" | terraform init -migrate-state'                }
             }
         }
 
