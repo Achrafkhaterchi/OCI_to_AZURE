@@ -18,6 +18,19 @@ pipeline {
 
             }
         }
+
+        stage('Debug Stashes') {
+            steps {
+                script {
+                    def stashes = findFiles(glob: '**/*.stash')
+                    if (stashes.length > 0) {
+                        echo "Found stashes: ${stashes.join(', ')}"
+                    } else {
+                        echo "No stashes found."
+                    }
+                }
+            }
+        }
 /*
         stage('Check main.tf existence') {
             steps {
