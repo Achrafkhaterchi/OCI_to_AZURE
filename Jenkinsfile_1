@@ -7,7 +7,6 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/Achrafkhaterchi/OCI_to_AZURE.git'
 
                 sh 'python3 Backend/Remote_State.py'
-                stash name: 'main_tf_artifact', includes: 'Network/VNets/main.tf'
             }
         }
 
@@ -18,11 +17,22 @@ pipeline {
             }
         }
 
-        /*stage('Stash main.tf') {
+        stage('Stash main.tf') {
             steps {
                 stash name: 'main_tf_artifact', includes: 'Network/VNets/main.tf'
             }
-        }*/
+        }
+        stage('Check main.tf existence') {
+            steps {
+                script {
+                    if (fileExists('Network/VNets/main.tf')) {
+                        echo 'main.tf exists.'
+                    } else {
+                        error('main.tf does not exist.')
+                    }
+                }
+            }
+        }
 
         stage('Terraform Init') {
             steps {
