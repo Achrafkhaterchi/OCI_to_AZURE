@@ -6,6 +6,7 @@ from jinja2 import Template
 
 parent_dir = os.path.dirname(os.path.abspath(__file__))
 output_file_path = os.path.join(parent_dir, '..', 'Network', 'VNets', 'main.tf')
+output_file_path_routing = os.path.join(parent_dir, '..', 'Network', 'Routing', 'main.tf')
 storage_file_path = os.path.join(parent_dir, '..', 'Network', 'Storage', 'main.tf')
 excel_file_path = os.path.join(parent_dir, 'OCI.xlsx')
 wb = load_workbook(excel_file_path, data_only=True)
@@ -62,13 +63,31 @@ terraform {
 }
 """
 
+template_bck_routing = """
+data "terraform_remote_state" "vnets" {
+  backend = "azurerm"
+
+  config = {
+    resource_group_name   = var.resource_group_name
+    storage_account_name  = "{{ storage_account_name }}"
+    container_name        = "terraform-state"
+    key                   = "VNets/terraform.tfstate"
+  }
+}
+"""
+
 template_1 = Template(template_str)
 template_2 = Template(template_bck)
+template_3 = Template(template_bck_routing)
 
 new_resources = template_2.render(
     storage_account_name=storage_account_name,
     resource_group=resource_group,
     region=region
+)
+
+new_resources_routing = template_3.render(
+    storage_account_name=storage_account_name
 )
 
 existing_content = ""
@@ -80,6 +99,16 @@ updated_content = existing_content + "\n" + new_resources
 
 with open(output_file_path, "w") as f:
     f.write(updated_content)
+
+existing_content_routing = ""
+if os.path.exists(output_file_path_routing):
+    with open(output_file_path_routing, "r") as f:
+        existing_content_routing = f.read()
+
+updated_content_routing = existing_content_routing + "\n" + new_resources_routing
+
+with open(output_file_path_routing, "w") as f:
+    f.write(updated_content_routing)
 
 print("Les nouvelles ressources ont été ajoutées au fichier main.tf avec succès.")
 

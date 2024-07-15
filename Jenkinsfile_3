@@ -26,7 +26,7 @@ pipeline {
 
         stage('Retrieve main.tf from Shared Location') {
             steps {
-                sh 'cp /home/shared_files/main.tf Network/VNets/main.tf'
+                sh 'cp /home/shared_files/VNets/main.tf Network/VNets/main.tf'
                 script {
                     if (fileExists('Network/VNets/main.tf')) {
                         echo 'Network/VNets/main.tf exists after copy.'
@@ -35,7 +35,7 @@ pipeline {
                         error('Network/VNets/main.tf does not exist after copy.')
                     }
                 }
-                sh 'rm /home/shared_files/main.tf'
+                sh 'rm /home/shared_files/VNets/main.tf'
             }
         }
 /*

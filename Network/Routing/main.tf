@@ -4,17 +4,6 @@ provider "azurerm" {
 
 #----------------------------------------------------------------VNet Peering----------------------------------------------------------
 
-data "terraform_remote_state" "vnets" {
-  backend = "azurerm"
-
-  config = {
-    resource_group_name   = var.resource_group_name
-    storage_account_name  = "remotestatenb8slt0c"
-    container_name        = "terraform-state"
-    key                   = "VNets/terraform.tfstate"
-  }
-}
-
 resource "azurerm_virtual_network_peering" "vnet_peering_to_hub" {
   for_each = {
     for peering in var.peerings :

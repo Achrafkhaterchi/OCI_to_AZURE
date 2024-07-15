@@ -19,9 +19,14 @@ pipeline {
             }
         }
 
-        stage('Copy main.tf to Shared Location') {
+        stage('Copy main.tf VNets to Shared Location') {
             steps {
-                sh 'cp Network/VNets/main.tf /home/shared_files/main.tf'
+                sh 'cp Network/VNets/main.tf /home/shared_files/VNets/main.tf'
+            }
+        }
+        stage('Copy main.tf Routing to Shared Location') {
+            steps {
+                sh 'cp Network/Routing/main.tf /home/shared_files/Routing/main.tf'
             }
         }
 /*

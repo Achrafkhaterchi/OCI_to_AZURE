@@ -24,6 +24,21 @@ pipeline {
             }
         }
 
+        stage('Retrieve main.tf Routing from Shared Location') {
+            steps {
+                sh 'cp /home/shared_files/Routing/main.tf Network/Routing/main.tf'
+                script {
+                    if (fileExists('Network/Routing/main.tf')) {
+                        echo 'Network/Routing/main.tf exists after copy.'
+                        sh 'cat Network/Routing/main.tf'
+                    } else {
+                        error('Network/Routing/main.tf does not exist after copy.')
+                    }
+                }
+                sh 'rm /home/shared_files/Routing/main.tf'
+            }
+        }
+
         stage('Terraform Init') {
             steps {
                 dir('Network/Routing/') {

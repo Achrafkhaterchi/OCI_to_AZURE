@@ -27,11 +27,11 @@ pipeline {
                 }
             }
         }
-/*
+
         stage('Run Routing Pipeline') {
             steps {
                 script {
-                    def routingResult = build job: 'Routing_Pipeline', wait: true
+                    def routingResult = build job: 'Routing', wait: true
                     println "Routing Pipeline result: ${routingResult.result}"
 
                     if (routingResult.result != 'SUCCESS') {
@@ -39,7 +39,7 @@ pipeline {
                     }
                 }
             }
-        }*/
+        }
     }
 
     post {
