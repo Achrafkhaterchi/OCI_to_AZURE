@@ -28,7 +28,7 @@ pipeline {
                     if (fileExists('Network/VNets/main.tf')) {
                         echo 'main.tf exists.'
                         sh 'cat Network/VNets/main.tf'
-                        sh 'main_tf_artifact'
+                        sh 'cat main_tf_artifact'
                     } else {
                         error('main.tf does not exist.')
                     }
