@@ -35,6 +35,7 @@ pipeline {
                         error('Network/VNets/main.tf does not exist after copy.')
                     }
                 }
+                sh 'rm /home/shared_files/main.tf'
             }
         }
 /*
