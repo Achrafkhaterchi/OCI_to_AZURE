@@ -24,21 +24,9 @@ pipeline {
             }
         }
 
-        stage('Debug Stashes') {
-            steps {
-                script {
-                    def stashes = findFiles(glob: '**/*.stash')
-                    if (stashes.length > 0) {
-                        echo "Found stashes: ${stashes.join(', ')}"
-                    } else {
-                        echo "No stashes found."
-                    }
-                }
-            }
-        }
-
         stage('Retrieve and Unstash Network/VNets/main.tf from Storage') {
             steps {
+                stash(name: 'main_tf_artifact', includes: 'Network/VNets/main.tf')
                 unstash 'main_tf_artifact'
                 script {
                     if (fileExists('Network/VNets/main.tf')) {
