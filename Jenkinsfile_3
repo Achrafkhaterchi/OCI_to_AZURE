@@ -24,9 +24,18 @@ pipeline {
             }
         }
 
-        stage('Retrieve main.tf from Storage') {
+        stage('Retrieve and Unstash Network/VNets/main.tf from Storage') {
             steps {
                 unstash 'main_tf_artifact'
+                script {
+                    if (fileExists('Network/VNets/main.tf')) {
+                        echo 'Network/VNets/main.tf exists after unstash.'
+                        sh 'ls -l Network/VNets/main.tf'
+                        sh 'cat Network/VNets/main.tf'
+                    } else {
+                        error('Network/VNets/main.tf does not exist after unstash.')
+                    }
+                }
             }
         }
 
