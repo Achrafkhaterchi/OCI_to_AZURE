@@ -27,6 +27,7 @@ pipeline {
                 script {
                     if (fileExists('Network/VNets/main.tf')) {
                         echo 'main.tf exists.'
+                        sh 'cat Network/Storage/main.tf'
                     } else {
                         error('main.tf does not exist.')
                     }
