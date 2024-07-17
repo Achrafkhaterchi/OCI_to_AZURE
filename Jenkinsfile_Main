@@ -44,7 +44,7 @@ pipeline {
         stage('Run Security Pipeline') {
             steps {
                 script {
-                    def routingResult = build job: 'Security', wait: true
+                    def securityResult = build job: 'Security', wait: true
                     println "Security Pipeline result: ${securityResult.result}"
 
                     if (securityResult.result != 'SUCCESS') {
