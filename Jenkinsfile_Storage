@@ -13,9 +13,6 @@ pipeline {
         stage('Archive TF files') {
             steps {
                 archiveArtifacts 'Network/Storage/main.tf'
-                /*archiveArtifacts 'Network/VNets/main.tf'*/
-                /*stash name: 'main_tf_artifact', includes: 'Network/VNets/main.tf'*/
-
             }
         }
 
@@ -29,20 +26,13 @@ pipeline {
                 sh 'cp Network/Routing/main.tf /home/shared_files/Routing/main.tf'
             }
         }
-/*
-        stage('Check main.tf existence') {
+
+        stage('Copy main.tf Security to Shared Location') {
             steps {
-                script {
-                    if (fileExists('Network/VNets/main.tf')) {
-                        echo 'main.tf exists.'
-                        sh 'cat Network/VNets/main.tf'
-                    } else {
-                        error('main.tf does not exist.')
-                    }
-                }
+                sh 'cp Network/Security/main.tf /home/shared_files/Security/main.tf'
             }
         }
-*/
+
         stage('Terraform Init') {
             steps {
                 dir('Network/Storage') {

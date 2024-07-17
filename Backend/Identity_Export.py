@@ -1,5 +1,4 @@
 from openpyxl import load_workbook
-#import oci
 import json
 import os
 
@@ -8,7 +7,6 @@ parent_dir = os.path.dirname(os.path.abspath(__file__))
 tfstate_file_path = os.path.join(parent_dir, 'terraform.tfstate')
 excel_file_path = os.path.join(parent_dir, 'OCI.xlsx')
 
-#config = oci.config.from_file()
 
 with open(tfstate_file_path, "r") as file:
     tfstate_data = json.load(file)
@@ -40,8 +38,7 @@ region = ', '.join(region_map.get(r, r) for r in region_)
 
 compartments_names = [value["name"] for value in tfstate_data["outputs"]["compartments"]["value"].values()]
 compartments_descriptions= [value["description"] for value in tfstate_data["outputs"]["lz_compartments"]["value"]["compartments"].values()]
-#print(compartments_names)
-#print(compartments_descriptions)
+
 
 for name, description in zip(compartments_names, compartments_descriptions):
     compartments_sheet.append([region, name, description])

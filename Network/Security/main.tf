@@ -32,7 +32,9 @@ resource "azurerm_network_security_group" "nsg" {
 }
 
 resource "azurerm_subnet_network_security_group_association" "subnet_nsg_association" {
-  for_each = var.subnet_nsg_associations
-  subnet_id                 = azurerm_subnet.subnet[each.key].id
-  network_security_group_id = azurerm_network_security_group.nsg[each.value].id
+  for_each       = { for assoc in var.subnet_nsg_associations : "${assoc.subnet}-${assoc.nsg}" => assoc }
+  subnet_id      = data.terraform_remote_state.vnets.outputs.subnet_ids[each.value.subnet]
+  network_security_group_id = azurerm_network_security_group.nsg[each.value.nsg].id
 }
+
+#-----------------------------------------------------------------Retrieved Data-------------------------------------------------------

@@ -52,7 +52,7 @@ hub_vcn_name, spoke_vcns = peering(wb)
 
 def extract_route_tables(excel_file_path, sheet_name="Route_Table"):
     df_routes = pd.read_excel(excel_file_path, sheet_name=sheet_name)
-    df_vcns = pd.read_excel(excel_file_path, sheet_name="VCN")  # Assuming the sheet with VCN details is named "VCN"
+    df_vcns = pd.read_excel(excel_file_path, sheet_name="VCN")
     
     route_table_dict = {}
     
@@ -63,7 +63,7 @@ def extract_route_tables(excel_file_path, sheet_name="Route_Table"):
         rule_dest_type = row['Route_Rule_Destination_Type']
         
         if rule_dest_type != "CIDR_BLOCK":
-            continue  # Skip this row if Route_Rule_Destination_Type is not CIDR_BLOCK
+            continue
         
         if rule_dest == "0.0.0.0/0":
             next_hop_type = "Internet"

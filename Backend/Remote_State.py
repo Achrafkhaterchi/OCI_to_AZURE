@@ -7,6 +7,7 @@ from jinja2 import Template
 parent_dir = os.path.dirname(os.path.abspath(__file__))
 output_file_path = os.path.join(parent_dir, '..', 'Network', 'VNets', 'main.tf')
 output_file_path_routing = os.path.join(parent_dir, '..', 'Network', 'Routing', 'main.tf')
+output_file_path_security = os.path.join(parent_dir, '..', 'Network', 'Security', 'main.tf')
 storage_file_path = os.path.join(parent_dir, '..', 'Network', 'Storage', 'main.tf')
 excel_file_path = os.path.join(parent_dir, 'OCI.xlsx')
 wb = load_workbook(excel_file_path, data_only=True)
@@ -63,7 +64,7 @@ terraform {
 }
 """
 
-template_bck_routing = """
+template_data = """
 data "terraform_remote_state" "vnets" {
   backend = "azurerm"
 
@@ -78,16 +79,14 @@ data "terraform_remote_state" "vnets" {
 
 template_1 = Template(template_str)
 template_2 = Template(template_bck)
-template_3 = Template(template_bck_routing)
+template_3 = Template(template_data)
+
+#--------------------------------------------------------------------------------------------------------------
 
 new_resources = template_2.render(
     storage_account_name=storage_account_name,
     resource_group=resource_group,
     region=region
-)
-
-new_resources_routing = template_3.render(
-    storage_account_name=storage_account_name
 )
 
 existing_content = ""
@@ -100,17 +99,36 @@ updated_content = existing_content + "\n" + new_resources
 with open(output_file_path, "w") as f:
     f.write(updated_content)
 
+#--------------------------------------------------------------------------------------------------------------
+
+new_resources_routing_security = template_3.render(
+    storage_account_name=storage_account_name
+)
+
+
 existing_content_routing = ""
 if os.path.exists(output_file_path_routing):
     with open(output_file_path_routing, "r") as f:
         existing_content_routing = f.read()
 
-updated_content_routing = existing_content_routing + "\n" + new_resources_routing
+updated_content_routing = existing_content_routing + "\n" + new_resources_routing_security
 
 with open(output_file_path_routing, "w") as f:
     f.write(updated_content_routing)
 
+existing_content_security = ""
+if os.path.exists(output_file_path_security):
+    with open(output_file_path_security, "r") as f:
+        existing_content_security = f.read()
+
+updated_content_security = existing_content_security + "\n" + new_resources_routing_security
+
+with open(output_file_path_security, "w") as f:
+    f.write(updated_content_security)
+
 print("Les nouvelles ressources ont été ajoutées au fichier main.tf avec succès.")
+
+#--------------------------------------------------------------------------------------------------------------
 
 new_storage_content = template_1.render(
     resource_group=resource_group,

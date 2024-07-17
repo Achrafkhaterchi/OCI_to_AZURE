@@ -5,7 +5,7 @@ pipeline {
         stage('Run Storage Pipeline') {
             steps {
                 script {
-                    def storageResult = build job: 'OCI_to_Azure', wait: true
+                    def storageResult = build job: 'Storage', wait: true
                     println "Storage Pipeline result: ${storageResult.result}"
 
                     if (storageResult.result != 'SUCCESS') {
@@ -18,7 +18,7 @@ pipeline {
         stage('Run VNets Pipeline') {
             steps {
                 script {
-                    def vnetsResult = build job: 'VNets_Pipeline', wait: true
+                    def vnetsResult = build job: 'VNets', wait: true
                     println "VNets Pipeline result: ${vnetsResult.result}"
 
                     if (vnetsResult.result != 'SUCCESS') {
@@ -40,11 +40,24 @@ pipeline {
                 }
             }
         }
+
+        stage('Run Security Pipeline') {
+            steps {
+                script {
+                    def routingResult = build job: 'Security', wait: true
+                    println "Security Pipeline result: ${securityResult.result}"
+
+                    if (securityResult.result != 'SUCCESS') {
+                        error('Security Pipeline failed')
+                    }
+                }
+            }
+        }
     }
 
     post {
         success {
-            echo 'Storage, VNets, and Routing modules have been successfully transferred from OCI to Azure!'
+            echo 'Storage, VNets, Routing and Security modules have been successfully transferred from OCI to Azure!'
         }
         failure {
             echo 'One of the pipelines failed. Check the logs for more details.'

@@ -26,6 +26,10 @@ variable "network_security_groups" {
 }
 
 variable "subnet_nsg_associations" {
-  description = "Map of subnet to NSG associations"
-  type        = map(string)
+  description = "List of subnet to NSG associations"
+  type = list(object({
+    subnet = string
+    nsg    = string
+  }))
 }
+

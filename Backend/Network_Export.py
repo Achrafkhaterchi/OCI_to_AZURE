@@ -11,7 +11,6 @@ tfstate_file_path = os.path.join(parent_dir, 'network-tfstate_terraform.tfstate'
 tfstate_iam_path = os.path.join(parent_dir, 'terraform.tfstate')
 excel_file_path = os.path.join(parent_dir, 'OCI.xlsx')
 
-#config = oci.config.from_file()
 
 with open(tfstate_file_path, "r") as file:
     tfstate_data = json.load(file)
@@ -68,16 +67,6 @@ nsg_dict = {
     if "attributes" in instance and "id" in instance["attributes"] and "display_name" in instance["attributes"]
 }
 
-#security_list_dict = {
-    #instance["attributes"]["id"]: instance["attributes"]["display_name"]
-    #for resource in tfstate_data["resources"]
-    #if "type" in resource and resource["type"] in ["oci_core_security_list", "oci_core_default_security_list"]
-    #and "mode" in resource and resource["mode"] == "managed"
-    #for instance in resource.get("instances", [])
-    #if "attributes" in instance and "id" in instance["attributes"] and "display_name" in instance["attributes"]
-#}
-#print(security_list_dict)
-
 security_list_dict = {
     instance["attributes"]["id"]: instance["attributes"]["display_name"]
     for resource in tfstate_data["resources"]
@@ -88,9 +77,9 @@ security_list_dict = {
 } 
 
 protocol_mapping = {
-    '6': 'TCP',
-    '17': 'UDP',
-    '1': 'ICMP'
+    '6': 'Tcp',
+    '17': 'Udp',
+    '1': 'Icmp'
 }
 
 
@@ -169,13 +158,10 @@ for resource in tfstate_data.get("resources", []):
                 "Subnet_DNS_Label": subnet_dns_label
             })
 
-# Créer le DataFrame
 df2 = pd.DataFrame(grouped_subnet_data_list)
 
-# Trier par VCN
 df2.sort_values(by=["VCN_Name"], inplace=True)
 
-# Exporter vers Excel
 sheet_name = "Subnets"
 ws = wb[sheet_name]
 
@@ -187,7 +173,6 @@ for index, row in df2.iterrows():
 
     ws.append([vcn_name, subnet_name, subnet_cidr, subnet_dns_label])
 
-# Sauvegarder et fermer le fichier Excel
 wb.save(excel_file_path)
 wb.close()
 
@@ -229,7 +214,6 @@ sheet_name = "Route_Table"
 wb = load_workbook(excel_file_path)
 ws = wb[sheet_name]
 
-# Écrire les données dans la feuille Excel
 for index, row in df_route_tables.iterrows():
     vcn_name = row["VCN_Name"]
     route_table_name = row["Route_Table_Name"]
@@ -238,10 +222,8 @@ for index, row in df_route_tables.iterrows():
     route_rule_destination_types = row["Route_Rule_Destination_Type"]
 
     for description, destination, destination_type in zip(route_rule_descriptions, route_rule_destinations, route_rule_destination_types):
-        # Ajouter le nom du VCN à chaque ligne
         ws.append([vcn_name, route_table_name, description, destination, destination_type])
 
-# Sauvegarder et fermer le fichier Excel
 wb.save(excel_file_path)
 wb.close()
 
@@ -537,46 +519,6 @@ for r_idx, row in enumerate(rows, 1):
 wb.save(excel_file_path)
 wb.close()
 
-
-#---------------------------------------------------------------DRG Attachment-------------------------------------------------------------------
-
-# DRG_Name = []
-# VCN_IDs_drg = []
-
-# for resource in tfstate_data.get("resources", []):
-#     if resource.get("type") == "oci_core_drg" and resource.get("mode") == "managed":
-#         for instance in resource.get("instances", []):
-#             if "attributes" in instance:
-#                 if "display_name" in instance["attributes"]:
-#                     DRG_Name.append(instance["attributes"]["display_name"])
-#     if resource.get("type") == "oci_core_drg_attachment" and resource.get("mode") == "managed":
-#         for instance in resource.get("instances", []):
-#             if "attributes" in instance:    
-#                 if "vcn_id" in instance["attributes"]:
-#                     VCN_IDs_drg.append(instance["attributes"]["vcn_id"])
-
-# VCN_Names_drg = [vcn_dict.get(vcn_id, "Unknown ID") for vcn_id in VCN_IDs_drg]
-# print(VCN_Names_drg)
-# print(DRG_Name)
-
-# drg_data = {
-#     "VCN_Name": VCN_Names_drg,
-#     "DRG_Name": DRG_Name,
-# }
-# df_drg = pd.DataFrame(drg_data)
-
-# sheet_name = "DRG"
-# ws = wb[sheet_name]
-
-# rows = dataframe_to_rows(df_drg, index=False, header=True)
-
-# for r_idx, row in enumerate(rows, 1):
-#     for c_idx, value in enumerate(row, 1):
-#         ws.cell(row=r_idx, column=c_idx, value=value)
-
-# wb.save(excel_file_path)
-# wb.close()
-
 #---------------------------------------------------------------Security List Rules-----------------------------------------------------------------
 
 security_list_rules_data_list = []
@@ -639,7 +581,6 @@ for r_idx, row in enumerate(rows, 1):
 wb.save(excel_file_path)
 
 wb.close()
-
 
 #---------------------------------------------------------------Security List Associations------------------------------------------------------------
 

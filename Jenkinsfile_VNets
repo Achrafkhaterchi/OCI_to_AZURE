@@ -2,9 +2,9 @@ pipeline {
     agent any
 
     stages {
-        stage('Exportiong from OCI') {
+        stage('Exporting from OCI') {
             steps {
-                git branch: 'main', url:'https://github.com/Achrafkhaterchi/OCI_to_AZURE.git'
+                git branch: 'main', url: 'https://github.com/Achrafkhaterchi/OCI_to_AZURE.git'
 
                 sh 'python3 Backend/Network_Export.py Backend/OCI.xlsx Backend/network-tfstate_terraform.tfstate'
 
@@ -24,17 +24,47 @@ pipeline {
             }
         }
 
+        stage('Retrieve main.tf from Shared Location') {
+            steps {
+                sh 'cp /home/shared_files/VNets/main.tf Network/VNets/main.tf'
+                script {
+                    if (fileExists('Network/VNets/main.tf')) {
+                        echo 'Network/VNets/main.tf exists after copy.'
+                        sh 'cat Network/VNets/main.tf'
+                    } else {
+                        error('Network/VNets/main.tf does not exist after copy.')
+                    }
+                }
+                sh 'rm /home/shared_files/VNets/main.tf'
+            }
+        }
+/*
+        stage('Retrieve and Unstash Network/VNets/main.tf from Storage') {
+            steps {
+                unstash 'main_tf_artifact'
+                script {
+                    if (fileExists('Network/VNets/main.tf')) {
+                        echo 'Network/VNets/main.tf exists after unstash.'
+                        sh 'ls -l Network/VNets/main.tf'
+                        sh 'cat Network/VNets/main.tf'
+                    } else {
+                        error('Network/VNets/main.tf does not exist after unstash.')
+                    }
+                }
+            }
+        }
+*/
         stage('Terraform Init') {
             steps {
                 dir('Network/VNets/') {
-                    sh 'terraform init'
+                    sh 'echo "yes" | terraform init -reconfigure'
                 }
             }
         }
 
         stage('Terraform Plan') {
             steps {
-                dir('Network/VNets/'){
+                dir('Network/VNets/') {
                     sh 'terraform plan -var-file=variables.tfvars -out tfplan'
                 }
             }
@@ -42,16 +72,16 @@ pipeline {
 
         stage('Terraform Apply') {
             steps {
-                dir('Network/VNets/'){
-                sh 'terraform apply -auto-approve tfplan'
+                dir('Network/VNets/') {
+                    sh 'terraform apply -auto-approve tfplan'
                 }
             }
         }
 
         /*stage('Terraform Destroy') {
             steps {
-                dir('Network\VNets\'){
-                sh 'terraform destroy -auto-approve -var-file=variables.tfvars'
+                dir('Network/VNets/') {
+                    sh 'terraform destroy -auto-approve -var-file=variables.tfvars'
                 }
             }
         }*/
@@ -59,7 +89,7 @@ pipeline {
 
     post {
         success {
-            echo 'VNets module has successfully transfered from OCI to Azure !'
+            echo 'VNets module has successfully transferred from OCI to Azure!'
         }
     }
 }

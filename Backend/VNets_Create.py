@@ -93,7 +93,6 @@ if gateway_vnet_name and gateway_vnet_name in vcns and gateway_vnet_name in subn
         }
 
 
-# Si last_subnet est False
 if not last_subnet:
     vnet_address_space = vcns[gateway_vnet_name]["address_space"][0]
     num_subnets = len(subnets[gateway_vnet_name]) + 2

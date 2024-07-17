@@ -73,3 +73,5 @@ resource "azurerm_subnet_route_table_association" "route_association" {
   subnet_id      = data.terraform_remote_state.vnets.outputs.subnet_ids[each.value.subnet]
   route_table_id = azurerm_route_table.route_table[each.value.route_table].id
 }
+
+#-----------------------------------------------------------------Retrieved Data-------------------------------------------------------
