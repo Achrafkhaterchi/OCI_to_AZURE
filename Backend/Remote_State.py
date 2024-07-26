@@ -1,10 +1,13 @@
 import os
+import json
 import random
 import string
 from openpyxl import load_workbook
 from jinja2 import Template
 
 parent_dir = os.path.dirname(os.path.abspath(__file__))
+tfstate_file_path = os.path.join(parent_dir, 'network-tfstate_terraform.tfstate')
+tfstate_iam_path = os.path.join(parent_dir, 'terraform.tfstate')
 output_file_path = os.path.join(parent_dir, '..', 'Network', 'VNets', 'main.tf')
 output_file_path_routing = os.path.join(parent_dir, '..', 'Network', 'Routing', 'main.tf')
 output_file_path_security = os.path.join(parent_dir, '..', 'Network', 'Security', 'main.tf')
@@ -12,22 +15,68 @@ storage_file_path = os.path.join(parent_dir, '..', 'Network', 'Storage', 'main.t
 excel_file_path = os.path.join(parent_dir, 'OCI.xlsx')
 wb = load_workbook(excel_file_path, data_only=True)
 
+with open(tfstate_file_path, "r") as file:
+    tfstate_data = json.load(file)
+    
+with open(tfstate_iam_path, "r") as file:
+    tfstate_iam_data = json.load(file)
+    
+#-------------------------------------------------------------------------------------------------------------
+
 def generate_random_name(prefix, length=8):
     return prefix + ''.join(random.choices(string.ascii_lowercase + string.digits, k=length))
 
-def extract_resource_group(wb):
-    RG_sheet = wb["RG"]
-    resource_group = RG_sheet.cell(row=2, column=1).value
-    return resource_group
+#-------------------------------------------------------------------------------------------------------------
 
-resource_group = extract_resource_group(wb)
+compartment_dict = {
+    compartment["id"]: compartment["name"]
+    for compartment in tfstate_iam_data["outputs"]["compartments"]["value"].values()
+}
 
-def extract_region(wb):
-    compartment_sheet = wb["Compartments"]
-    region = compartment_sheet.cell(row=2, column=1).value
+def network_rg(tfstate_data):
+    rg_ids = set()
+    
+    for resource in tfstate_data.get("resources", []):
+        if resource.get("type") == "oci_core_vcn" and resource.get("mode") == "managed":
+            for instance in resource.get("instances", []):
+                attributes = instance.get("attributes", {})
+                compartment_id = attributes.get("compartment_id", "Unknown ID")
+                rg_ids.add(compartment_id)
+    
+    return rg_ids
+
+network_rg_ids = network_rg(tfstate_data)
+
+def resource_group(compartment_dict, network_rg_ids):
+    for rg_id, rg_name in compartment_dict.items():
+        if rg_id in network_rg_ids:
+            return rg_name
+
+resource_group = resource_group(compartment_dict, network_rg_ids)
+
+#-------------------------------------------------------------------------------------------------------------
+
+region_map = {
+    "eu-paris-1": "eastus"
+}
+
+def get_region(tfstate_iam_data, region_map):
+    region_ = [
+        instance["attributes"]["reporting_region"]
+        for resource in tfstate_iam_data["resources"]
+        if "type" in resource and resource["type"] == "oci_cloud_guard_cloud_guard_configuration"
+        and "mode" in resource and resource["mode"] == "managed"
+        for instance in resource.get("instances", [])
+        if "attributes" in instance and "reporting_region" in instance["attributes"]
+    ]
+
+    region = ', '.join(region_map.get(r, r) for r in region_)
+    
     return region
 
-region = extract_region(wb)
+region = get_region(tfstate_iam_data, region_map)
+
+#-------------------------------------------------------------------------------------------------------------
 
 storage_account_name = generate_random_name("remotestate")
 

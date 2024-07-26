@@ -11,7 +11,6 @@ resource "azurerm_resource_group" "rg" {
   }
 }
 
-# Définition des ressources Azure AD
 resource "azuread_group" "example" {
   for_each     = { for group in var.group_config : group.name => group }
   display_name = each.value.name

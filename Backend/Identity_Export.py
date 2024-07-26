@@ -34,7 +34,7 @@ region_map = {
 }
 
 region = ', '.join(region_map.get(r, r) for r in region_)
-
+print(region)
 
 compartments_names = [value["name"] for value in tfstate_data["outputs"]["compartments"]["value"].values()]
 compartments_descriptions= [value["description"] for value in tfstate_data["outputs"]["lz_compartments"]["value"]["compartments"].values()]
