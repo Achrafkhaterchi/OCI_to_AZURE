@@ -21,7 +21,7 @@ resource_group = extract_resource_group(wb)
 #----------------------------------------------------------------------------------------------------------------------------
 
 def extract_region(wb):
-    compartment_sheet = wb["Compartments"]
+    compartment_sheet = wb["Region"]
     region = compartment_sheet.cell(row=2, column=1).value
     return region
 

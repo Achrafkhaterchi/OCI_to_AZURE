@@ -14,7 +14,7 @@ wb = load_workbook(excel_file_path, data_only=True)
 #--------------------------------------------------------------------------------------------------------------------------
 
 def extract_resource_group(wb):
-    vcn_sheet = wb["VCN"]
+    vcn_sheet = wb["RG"]
     resource_group = vcn_sheet.cell(row=2, column=1).value
     return resource_group
 
@@ -23,7 +23,7 @@ resource_group = extract_resource_group(wb)
 #--------------------------------------------------------------------------------------------------------------------------
 
 def extract_region(wb):
-    compartment_sheet = wb["Compartments"]
+    compartment_sheet = wb["Region"]
     region = compartment_sheet.cell(row=2, column=1).value
     return region
 
