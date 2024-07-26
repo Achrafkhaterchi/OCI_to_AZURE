@@ -124,6 +124,10 @@ df_vcn = pd.DataFrame(grouped_vcn_data_list)
 sheet_name = "VCN"
 ws = wb[sheet_name]
 
+sheet_rg_name = "RG"
+ws_rg = wb[sheet_rg_name]
+
+
 for index, row in df_vcn.iterrows():
     compartment_name = row["Compartment_Name"]
     vcn_names = row["VCN_Name"]
@@ -132,6 +136,10 @@ for index, row in df_vcn.iterrows():
 
     for vcn_name, dns_label, cidr_block in zip(vcn_names, dns_labels, cidr_blocks):
         ws.append([compartment_name, vcn_name, dns_label, cidr_block])
+
+for index, row in df_vcn.iterrows():
+    compartment_name = row["Compartment_Name"]
+    ws_rg.append([compartment_name])
 
 wb.save(excel_file_path)
 wb.close()

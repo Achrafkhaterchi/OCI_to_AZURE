@@ -2,6 +2,19 @@ pipeline {
     agent any
 
     stages {
+        stage('Run IAM Pipeline') {
+            steps {
+                script {
+                    def iamResult = build job: 'IAM', wait: true
+                    println "IAM Pipeline result: ${iamResult.result}"
+
+                    if (iamResult.result != 'SUCCESS') {
+                        error('IAM Pipeline failed')
+                    }
+                }
+            }
+        }
+
         stage('Run Storage Pipeline') {
             steps {
                 script {
