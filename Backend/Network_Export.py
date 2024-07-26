@@ -84,9 +84,31 @@ protocol_mapping = {
 
 
 
+region_map = {
+    "eu-paris-1": "eastus"
+}
 
+#------------------------------------------------------------Region---------------------------------------------------------------
 
+region_ = [
+    instance["attributes"]["reporting_region"]
+    for resource in tfstate_iam_data["resources"]
+    if "type" in resource and resource["type"] == "oci_cloud_guard_cloud_guard_configuration"
+    and "mode" in resource and resource["mode"] == "managed"
+    for instance in resource.get("instances", [])
+    if "attributes" in instance and "reporting_region" in instance["attributes"]
+]
 
+region = ', '.join(region_map.get(r, r) for r in region_)
+
+sheet_name = "Region"
+ws = wb[sheet_name]
+
+row = ws.max_row + 1
+ws[f"A{row}"] = region
+
+wb.save(excel_file_path)
+wb.close()
 
 #--------------------------------------------------------------VCNs---------------------------------------------------------------
 
